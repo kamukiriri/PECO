@@ -17,8 +17,8 @@ namespace Test
         static void Main(string[] args)
         {
             var obj = new Cls();
-            obj.Id = 1;
-            obj.Name = "aaaa";
+            obj["Id"] = 1;
+            obj["Name"] = "aaaa";
 
             foreach (object fld in obj)
             {
