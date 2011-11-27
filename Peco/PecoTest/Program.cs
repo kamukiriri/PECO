@@ -6,7 +6,7 @@ using Util.Data.Peco;
 
 namespace Test
 {
-    class Cls : PecoBase
+    class Cls : PecoBase<Cls>
     {
         public int Id { get; set; }
         public string Name { get; set; }

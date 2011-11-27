@@ -13,23 +13,24 @@ namespace Util.Data.Peco
     /// Property Enumerable CLR Object
     /// 派生クラスにPublicなプロパティを列挙する機能を提供する
     /// </remarks>
-    public abstract class PecoBase
+    public abstract class PecoBase<T>
+        where T:new()
     {
-        private List<PropertyInfo> _propertyList;
-        private Dictionary<string, int> _indexTable;
+        private static List<PropertyInfo> _propertyList;
+        private static Dictionary<string, int> _indexTable;
 
-        public PecoBase()
+        static PecoBase()
         {
             PropertyInfo[] allProperties;
 
             //プロパティ一覧取得
-            allProperties = this.GetType().GetProperties(BindingFlags.Instance |
+            allProperties = typeof(T).GetProperties(BindingFlags.Instance |
                                                             BindingFlags.Public);
 
-            this._propertyList = new List<PropertyInfo>();
+            _propertyList = new List<PropertyInfo>();
 
             //プロパティリスト、プロパティ名と配列位置の関連付けハッシュを作成
-            this._indexTable = new Dictionary<string, int>();
+            _indexTable = new Dictionary<string, int>();
 
             foreach (PropertyInfo prop in allProperties)
             {
@@ -39,8 +40,8 @@ namespace Util.Data.Peco
                     continue;
                 }
 
-                this._propertyList.Add(prop);
-                this._indexTable.Add(prop.Name, this._propertyList.Count - 1);
+                _propertyList.Add(prop);
+                _indexTable.Add(prop.Name, _propertyList.Count - 1);
             }
         }
 
@@ -53,13 +54,13 @@ namespace Util.Data.Peco
         {
             get
             {
-                var prop = this._getPropertyInfo(key);
+                var prop = _getPropertyInfo(key);
                 return prop.GetValue(this, null);
             }
 
             set
             {
-                var prop = this._getPropertyInfo(key);
+                var prop = _getPropertyInfo(key);
                 prop.SetValue(this, value, null);
             }
         }
@@ -73,13 +74,13 @@ namespace Util.Data.Peco
         {
             get
             {
-                var prop = this._getPropertyInfo(index);
+                var prop = _getPropertyInfo(index);
                 return prop.GetValue(this, null);
             }
 
             set
             {
-                var prop = this._getPropertyInfo(index);
+                var prop = _getPropertyInfo(index);
                 prop.SetValue(this, value, null);
             }
         }
@@ -90,7 +91,7 @@ namespace Util.Data.Peco
         /// <returns>プロパティの値</returns>
         public IEnumerator<object> GetEnumerator()
         {
-            foreach (var prop in this._propertyList)
+            foreach (var prop in _propertyList)
             {
                 yield return prop.GetValue(this, null);
             }
@@ -101,15 +102,15 @@ namespace Util.Data.Peco
         /// </summary>
         /// <param name="index">PropertyInfo配列上の位置</param>
         /// <returns>指定された位置のPropertyInfo</returns>
-        private PropertyInfo _getPropertyInfo(int index)
+        private static PropertyInfo _getPropertyInfo(int index)
         {
             //インデックスが不正な場合、例外をスロー
-            if (index < 0 || index > this._propertyList.Count - 1)
+            if (index < 0 || index > _propertyList.Count - 1)
             {
                 throw new IndexOutOfRangeException();
             }
 
-            return this._propertyList[index];
+            return _propertyList[index];
         }
 
         /// <summary>
@@ -117,15 +118,15 @@ namespace Util.Data.Peco
         /// </summary>
         /// <param name="key">プロパティ名</param>
         /// <returns>指定されたプロパティのPropertyInfo</returns>
-        private PropertyInfo _getPropertyInfo(string key)
+        private static  PropertyInfo _getPropertyInfo(string key)
         {
             //指定されたプロパティが存在しない場合、例外をスロー
-            if (!this._indexTable.ContainsKey(key))
+            if (!_indexTable.ContainsKey(key))
             {
                 throw new KeyNotFoundException();
             }
 
-            return this._propertyList[this._indexTable[key]];
+            return _propertyList[_indexTable[key]];
         }
 
         /// <summary>
@@ -134,7 +135,7 @@ namespace Util.Data.Peco
         /// <returns>項目の数</returns>
         public int ItemCount()
         {
-            return this._propertyList.Count;
+            return _propertyList.Count;
         }
 
         /// <summary>
@@ -143,17 +144,17 @@ namespace Util.Data.Peco
         /// <returns>項目名の配列</returns>
         public string[] ItemNames()
         {
-            return this._indexTable.Keys.ToArray();
+            return _indexTable.Keys.ToArray();
         }
 
         public Type GetItemType(int index)
         {
-            return this._getPropertyInfo(index).PropertyType;
+            return _getPropertyInfo(index).PropertyType;
         }
 
         public Type GetItemType(string key)
         {
-            return this._getPropertyInfo(key).PropertyType;
+            return _getPropertyInfo(key).PropertyType;
         }
     }
 }
